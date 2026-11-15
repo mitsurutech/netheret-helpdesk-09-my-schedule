@@ -45,4 +45,22 @@ gives 403.
 - `finished_now`: the timeline note is only written the first time a job
   becomes done, not every time the notes are saved.
 
-<!-- links -->
+## Learn this step
+
+This is step 9 of 16 of **Task 2. Developing the solution**, a free series of T Level Digital Software Development
+lessons that builds the Netheret help desk in agile sprints with Python and Flask. Read the lesson for this step:
+[An engineer's schedule and job briefs](https://mitsurutech.co.uk/resources/t-level/dsd-t2-09-my-schedule).
+
+- Previous step: [step 08, scheduling on-site jobs](https://github.com/mitsurutech/netheret-helpdesk-08-jobs)
+- Next step: [step 10, the knowledge base](https://github.com/mitsurutech/netheret-helpdesk-10-knowledge-base)
+- [Every free T Level Digital lesson](https://mitsurutech.co.uk/resources/t-level)
+- [Teach these lessons to your class on MitsuruTech](https://mitsurutech.co.uk/learning), [see the pricing](https://mitsurutech.co.uk/pricing) or
+  [start a free year for your college](https://mitsurutech.co.uk/signup)
+
+## About
+
+Written by [Mitsuru Technologies](https://mitsurutech.co.uk) (MitsuruTech) as a teaching example for T Level Digital
+Software Development. The Netheret IT Support Solutions brief is from Pearson's sample assessment material; this code
+and its notes are our own, and are not published, endorsed or approved by Pearson or the Department for Education.
+'T Level' is a registered trade mark of the Department for Education.
+
