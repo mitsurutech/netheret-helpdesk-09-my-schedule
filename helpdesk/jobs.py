@@ -1,11 +1,11 @@
 """On-site jobs: scheduling them and the week view."""
 from datetime import date, datetime, timedelta
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 
 from .auth import role_required
 from .extensions import db
-from .models import ENGINEER_ROLES, JOB_KINDS, STAFF_ROLES, Company, Job, Ticket, User
+from .models import ENGINEER_ROLES, JOB_KINDS, JOB_STATUSES, STAFF_ROLES, Company, Job, Ticket, User
 from .tickets import add_update
 
 bp = Blueprint("jobs", __name__)
@@ -167,3 +167,60 @@ def new_job():
         "jobs/new.html", form=form, errors=errors, companies=companies,
         engineers=engineers, tickets=tickets, kinds=JOB_KINDS,
     )
+
+
+@bp.route("/jobs/mine")
+@role_required(*ENGINEER_ROLES)
+def my_schedule():
+    """An engineer's own jobs from today onwards, grouped by day."""
+    start_of_today = datetime.combine(date.today(), datetime.min.time())
+    jobs = db.session.scalars(
+        db.select(Job)
+        .where(Job.engineer_id == g.user.id, Job.status != "cancelled")
+        # Also show older jobs that were started but never marked done.
+        .where((Job.scheduled_start >= start_of_today) | (Job.status == "in_progress"))
+        .order_by(Job.scheduled_start)
+    ).all()
+
+    # Group the jobs by day: {date: [jobs on that date]}. Dictionaries keep
+    # the order things were added, and the jobs are already in time order.
+    days = {}
+    for job in jobs:
+        days.setdefault(job.scheduled_start.date(), []).append(job)
+    return render_template("jobs/mine.html", days=days, today=date.today())
+
+
+@bp.route("/jobs/<int:job_id>")
+@role_required(*STAFF_ROLES)
+def brief(job_id):
+    """The job brief: everything an engineer needs on site."""
+    job = db.get_or_404(Job, job_id)
+    if not job.can_be_seen_by(g.user):
+        abort(403)
+    # Engineers can move a job along; only a manager can cancel one.
+    statuses = JOB_STATUSES if g.user.role == "manager" else ["scheduled", "in_progress", "done"]
+    return render_template("jobs/brief.html", job=job, statuses=statuses)
+
+
+@bp.route("/jobs/<int:job_id>/progress", methods=["POST"])
+@role_required(*STAFF_ROLES)
+def progress(job_id):
+    """Mark progress on a job: its status and the engineer's notes."""
+    job = db.get_or_404(Job, job_id)
+    if not job.can_be_updated_by(g.user):
+        abort(403)
+    new_status = request.form.get("status", "")
+    allowed = JOB_STATUSES if g.user.role == "manager" else ["scheduled", "in_progress", "done"]
+    if new_status not in allowed:
+        flash("Choose a status from the list.")
+        return redirect(url_for("jobs.brief", job_id=job.id))
+
+    finished_now = new_status == "done" and job.status != "done"
+    job.status = new_status
+    job.notes = request.form.get("notes", "").strip()
+    if finished_now and job.ticket:
+        # Record the visit on the request's timeline for the help desk.
+        add_update(job.ticket, f"On-site job \"{job.title}\" done. Notes: {job.notes or 'none'}", False)
+    db.session.commit()
+    flash("Job updated.")
+    return redirect(url_for("jobs.brief", job_id=job.id))

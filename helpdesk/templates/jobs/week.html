@@ -21,7 +21,13 @@
         {% for job in day.jobs %}
         <li class="job{{ ' cancelled' if job.status == 'cancelled' }}">
           <p class="job-time">{{ job.scheduled_start.strftime("%H:%M") }} to {{ job.scheduled_end.strftime("%H:%M") }}</p>
-          <p class="job-title">{{ job.title }}</p>
+          <p class="job-title">
+            {% if job.can_be_seen_by(g.user) %}
+            <a href="{{ url_for('jobs.brief', job_id=job.id) }}">{{ job.title }}</a>
+            {% else %}
+            {{ job.title }}
+            {% endif %}
+          </p>
           <p>{{ job.company.name }}<br>{{ job.engineer.name }}, {{ job.kind }}</p>
           <p><span class="badge job-{{ job.status }}">{{ job.status|replace("_", " ")|capitalize }}</span></p>
         </li>

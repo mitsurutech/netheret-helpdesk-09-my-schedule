@@ -143,6 +143,13 @@ class Job(db.Model):
     def scheduled_end(self):
         return self.scheduled_start + timedelta(minutes=self.duration_minutes)
 
+    def can_be_seen_by(self, user):
+        """Managers and Tier 1 see every job; an engineer sees their own."""
+        return user.role in ["manager", "tier1"] or self.engineer_id == user.id
+
+    def can_be_updated_by(self, user):
+        return user.role == "manager" or self.engineer_id == user.id
+
 
 class Article(db.Model):
     """A knowledge base article: a known problem and how to fix it."""

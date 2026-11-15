@@ -19,7 +19,8 @@
   <ul class="quick-links">
     <li><a href="{{ url_for('tickets.queue', assigned='me') }}">Requests assigned to me</a></li>
     <li><a href="{{ url_for('tickets.queue', tier=g.user.role[-1]) }}">Everything at Tier {{ g.user.role[-1] }}</a></li>
-    <li><a href="{{ url_for('jobs.week') }}">This week's on-site jobs</a></li>
+    <li><a href="{{ url_for('jobs.my_schedule') }}">My schedule and job briefs</a></li>
+    <li><a href="{{ url_for('jobs.week') }}">The whole team's week</a></li>
   </ul>
   {% elif g.user.role == "manager" %}
   <p>Assign work and keep an eye on the queue.</p>

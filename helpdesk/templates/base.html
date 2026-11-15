@@ -25,6 +25,9 @@
           {% if g.user.is_staff %}
           {{ nav_link('tickets.queue', 'Queue') }}
           {{ nav_link('jobs.week', 'Jobs') }}
+          {% if g.user.role in ["tier2", "tier3"] %}
+          {{ nav_link('jobs.my_schedule', 'My schedule') }}
+          {% endif %}
           {% endif %}
           {% if g.user.role in ["customer", "tier1", "manager"] %}
           {{ nav_link('tickets.new_request', 'Raise a request') }}

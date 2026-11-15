@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Job brief: {{ job.title }}{% endblock %}
+{% block content %}
+  <p><a href="{{ url_for('jobs.week', week=job.scheduled_start.date().isoformat()) }}">Back to the week</a></p>
+  <h1>Job brief: {{ job.title }}</h1>
+
+  <dl class="summary">
+    <dt>When</dt><dd>{{ job.scheduled_start|date }}, {{ job.scheduled_start.strftime("%H:%M") }} to {{ job.scheduled_end.strftime("%H:%M") }} ({{ job.duration_minutes }} minutes)</dd>
+    <dt>Engineer</dt><dd>{{ job.engineer.name }}</dd>
+    <dt>Kind</dt><dd>{{ job.kind|capitalize }}</dd>
+    <dt>Status</dt><dd><span class="badge job-{{ job.status }}">{{ job.status|replace("_", " ")|capitalize }}</span></dd>
+    <dt>Customer</dt><dd>{{ job.company.name }}</dd>
+    <dt>Address</dt><dd>{{ job.company.address }}</dd>
+    <dt>Phone</dt><dd>{{ job.company.phone }}</dd>
+    {% if job.ticket %}
+    <dt>Request</dt><dd><a href="{{ url_for('tickets.detail', ticket_id=job.ticket.id) }}">{{ job.ticket.reference }}: {{ job.ticket.title }}</a></dd>
+    {% endif %}
+  </dl>
+
+  <h2>What to do</h2>
+  <p class="keep-lines">{{ job.brief }}</p>
+
+  {% if job.ticket %}
+  <h2>The customer's problem</h2>
+  <p class="keep-lines">{{ job.ticket.description }}</p>
+  {% endif %}
+
+  {% if job.can_be_updated_by(g.user) %}
+  <h2>Progress</h2>
+  <form method="post" action="{{ url_for('jobs.progress', job_id=job.id) }}">
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        {% for status in statuses %}
+        <option value="{{ status }}"{% if job.status == status %} selected{% endif %}>{{ status|replace("_", " ")|capitalize }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="notes">Notes</label>
+      <span class="hint" id="notes-hint">What you did and anything left to do.</span>
+      <textarea id="notes" name="notes" aria-describedby="notes-hint">{{ job.notes }}</textarea>
+    </div>
+    <button type="submit">Save progress</button>
+  </form>
+  {% elif job.notes %}
+  <h2>Engineer's notes</h2>
+  <p class="keep-lines">{{ job.notes }}</p>
+  {% endif %}
+{% endblock %}

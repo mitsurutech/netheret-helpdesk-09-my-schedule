@@ -1,22 +1,25 @@
-# Netheret help desk, step 08: jobs
+# Netheret help desk, step 09: my schedule
 
 A teaching example. Over sixteen steps we build a help desk web app for
 Netheret, a made-up company that supports the IT of small businesses. This
-step lets a manager schedule on-site jobs for engineers and see a week of
-jobs laid out like a calendar.
+step gives Tier 2 and Tier 3 engineers their own schedule and a job brief
+for each job, where they mark their progress.
 
 ## What this step adds
 
-- `helpdesk/jobs.py`, a new blueprint with:
-  - `/jobs`: the week view, Monday to Sunday, with previous and next week
-    links (`/jobs?week=2026-11-16` shows the week with that date in it);
-  - `/jobs/new`: the form to schedule a job (managers only).
-- `find_clash()`: an engineer cannot be booked for two jobs at once.
-- `Job.scheduled_end` in `models.py`: the end time worked out from the start
-  and the length, rather than stored twice.
-- A "Schedule a job" button on a request's detail page, which fills in the
-  company and request. The customer sees "An engineer will visit on..." on
-  the request's timeline.
+In `helpdesk/jobs.py`:
+
+- `/jobs/mine`: an engineer's jobs from today onwards, grouped by day, plus
+  any older job still marked "in progress".
+- `/jobs/<id>`: the job brief: when, where, the customer's phone number, the
+  brief, and the customer's original problem if the job came from a request.
+- `/jobs/<id>/progress`: the engineer moves the job to "in progress" or
+  "done" and writes notes. When a job from a request is done, a note goes on
+  that request's timeline.
+
+In `helpdesk/models.py`, `Job.can_be_seen_by()` and `Job.can_be_updated_by()`
+keep the rules about who may see and change a job in one place. The week
+view and the brief page both use them.
 
 ## Run it
 
@@ -28,19 +31,18 @@ python seed.py
 flask --app helpdesk run --debug
 ```
 
-Sign in as `manager@netheret.example` (demo password `password123`), open
-Jobs, and schedule a job. Try booking the same engineer twice at the same
-time to see the clash message.
+Sign in as `tier2@netheret.example` or `tier3@netheret.example` (demo
+password `password123`) and open My schedule. Try to open another
+engineer's job from the week view: there is no link, and typing the address
+gives 403.
 
 ## What to look at
 
-- Two time ranges overlap when each one starts before the other one ends:
-  `job.scheduled_start < end and start < job.scheduled_end`.
-- `datetime.strptime` turns the text from a `datetime-local` box into a
-  `datetime`, and a `ValueError` means it was not a real date and time.
-- The chosen request must belong to the chosen company: the server checks
-  that the pieces of the form agree with each other, not just each one alone.
-- The week view uses CSS grid, so it is seven columns on a wide screen and
-  one column on a phone, and each day is a section with a heading.
+- `days.setdefault(day, []).append(job)`: a short way to group a list into a
+  dictionary of lists.
+- An engineer cannot cancel a job. The form leaves that choice out, and the
+  server refuses it too, because a form can be changed by the person using it.
+- `finished_now`: the timeline note is only written the first time a job
+  becomes done, not every time the notes are saved.
 
 <!-- links -->

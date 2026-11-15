@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}My schedule{% endblock %}
+{% block content %}
+  <h1>My schedule</h1>
+  <p>Your jobs from today onwards. Open a job to read its brief and mark your progress.</p>
+
+  {% for day, jobs in days.items() %}
+  <section aria-labelledby="day-{{ loop.index }}">
+    <h2 id="day-{{ loop.index }}">{{ day|date }}{% if day == today %} (today){% elif day < today %} (earlier, not finished){% endif %}</h2>
+    <ul class="job-list">
+      {% for job in jobs %}
+      <li class="job">
+        <p class="job-time">{{ job.scheduled_start.strftime("%H:%M") }} to {{ job.scheduled_end.strftime("%H:%M") }}</p>
+        <p class="job-title"><a href="{{ url_for('jobs.brief', job_id=job.id) }}">{{ job.title }}</a></p>
+        <p>{{ job.company.name }}, {{ job.company.address }}</p>
+        <p><span class="badge job-{{ job.status }}">{{ job.status|replace("_", " ")|capitalize }}</span></p>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% else %}
+  <p>You have no jobs booked from today onwards.</p>
+  {% endfor %}
+
+  <p><a href="{{ url_for('jobs.week') }}">See the whole team's week</a></p>
+{% endblock %}
