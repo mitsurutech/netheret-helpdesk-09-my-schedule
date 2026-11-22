@@ -1,5 +1,7 @@
 # Netheret help desk, step 09: my schedule
 
+[English](README.md) | [Français](README.fr.md) | [Español](README.es.md) | [日本語](README.ja.md) | [Deutsch](README.de.md)
+
 A teaching example. Over sixteen steps we build a help desk web app for
 Netheret, a made-up company that supports the IT of small businesses. This
 step gives Tier 2 and Tier 3 engineers their own schedule and a job brief
